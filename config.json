@@ -1,0 +1,11 @@
+{
+	"repos": [
+		{
+			"path": "/home/test/testgitrepo",
+			"branch": "origin/master",
+			"autofetch": true,
+			"soundfile": "lm_coin.wav"
+		}
+	],
+	"period": 30
+}
