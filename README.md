@@ -17,6 +17,9 @@ changes by playing a selected sound file an saying out loud who did commit what.
 * Run ```go run gitdinger.go```
 * Profit!
 
+Optionally you can specify a different config file, by usigng the ```-config``` flag.
+Use ```-h``` to get a usage description.
+
 ## Sample output
 
 ```
