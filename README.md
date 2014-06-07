@@ -2,7 +2,7 @@ GitDinger
 =========
 
 GitDinger monitors your local copies of git repositories and notifies you of
-changes by playing a selected sound file an saying out loud who did commit what.
+changes by playing a selected sound file and saying out loud who did commit what.
 
 The ```autofetch``` configuration causes gitdinger to fetch the repositories and
 thus monitor even remote branches easily. Just specify for example ```origin/master```
