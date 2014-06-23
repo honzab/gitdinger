@@ -13,6 +13,28 @@ and set ```autofetch``` to ```true```.
 * ```git``` installed in your $PATH
 * Mac OS, specifically preinstalled binaries ```say``` and ```afplay```
 
+## Configuration
+
+```
+{
+	"repos": [
+		{
+			"path": "/home/test/testgitrepo",
+			"branch": "origin/master",
+			"autofetch": true,
+			"soundfile": "lm_coin.wav"
+		}
+	],
+	"period": 30
+}
+```
+ 
+* ```repos``` - A list of all repos that should be monitored
+* ```path``` - Path to the git repository
+* ```branch``` - Which branch to track (```master```, ```origin/master```, ...)
+* ```autofetch``` - Run ```fetch --all``` every time a check is to be performed
+* ```soundfile``` - Path to a soundfile to play when changes are registered
+* ```period``` - How often to check (seconds)
 
 ## Installation / Running
 
