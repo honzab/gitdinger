@@ -22,7 +22,8 @@ and set ```autofetch``` to ```true```.
 			"path": "/home/test/testgitrepo",
 			"branch": "origin/master",
 			"autofetch": true,
-			"soundfile": "lm_coin.wav"
+			"soundfile": "lm_coin.wav",
+			"voice": "Zarvox"
 		}
 	],
 	"period": 30
@@ -34,6 +35,7 @@ and set ```autofetch``` to ```true```.
 * ```branch``` - Which branch to track (```master```, ```origin/master```, ...)
 * ```autofetch``` - Run ```fetch --all``` every time a check is to be performed
 * ```soundfile``` - Path to a soundfile to play when changes are registered
+* ```voice``` - A voice to use (get all usable by running ```say -v?```
 * ```period``` - How often to check (seconds)
 
 ## Installation / Running

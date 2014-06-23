@@ -4,7 +4,8 @@
 			"path": "/home/test/testgitrepo",
 			"branch": "origin/master",
 			"autofetch": true,
-			"soundfile": "lm_coin.wav"
+			"soundfile": "lm_coin.wav",
+			"voice": "Zarvox"
 		}
 	],
 	"period": 30

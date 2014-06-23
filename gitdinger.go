@@ -27,11 +27,13 @@ type Repo struct {
 	Branch    string `json:"branch"`
 	Autofetch bool   `json:"autofetch"`
 	Soundfile string `json:"soundfile"`
+	Voice     string `json:"voice"`
 }
 
 type Notification struct {
 	Type    int64
 	Message string
+	Voice   string
 }
 
 func ParseConfig(configpath string) *Config {
@@ -57,8 +59,13 @@ func Notifier(c chan Notification) {
 	checkCommand("afplay", "which", "afplay")
 	for msg := range c {
 		if msg.Type == 1 {
-			log.Printf(" Saying: %s\n", msg.Message)
-			exec.Command("say", fmt.Sprintf("%s", msg.Message)).Run()
+			if msg.Voice == "" {
+				log.Printf(" Saying %s using default voice\n", msg.Message)
+				exec.Command("say", fmt.Sprintf("%s", msg.Message)).Run()
+			} else {
+				log.Printf(" Saying %s using %s voice\n", msg.Message, msg.Voice)
+				exec.Command("say", "-v", fmt.Sprintf("%s", msg.Voice), fmt.Sprintf("%s", msg.Message)).Run()
+			}
 		} else if msg.Type == 2 {
 			play_cmd := exec.Command("afplay", msg.Message)
 			play_cmd.Dir = Cwd
@@ -103,8 +110,8 @@ func WatchRepo(notify chan Notification, ticker *time.Ticker, r Repo) {
 				difference_size := len(differences)
 				log.Printf(" Dinging %d times.\n", difference_size)
 				for i := difference_size - 1; i >= 0; i-- {
-					notify <- Notification{2, r.Soundfile}
-					notify <- Notification{1, fmt.Sprintf(differences[i])}
+					notify <- Notification{2, r.Soundfile, r.Voice}
+					notify <- Notification{1, fmt.Sprintf(differences[i]), r.Voice}
 				}
 			}
 		}
