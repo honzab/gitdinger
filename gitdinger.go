@@ -102,10 +102,8 @@ func WatchRepo(notify chan Notification, ticker *time.Ticker, r Repo) {
 			if len(diff) > 0 {
 				difference_size := len(differences)
 				log.Printf(" Dinging %d times.\n", difference_size)
-				for i := 0; i < difference_size; i++ {
+				for i := difference_size - 1; i >= 0; i-- {
 					notify <- Notification{2, r.Soundfile}
-				}
-				for i := 0; i < difference_size; i++ {
 					notify <- Notification{1, fmt.Sprintf(differences[i])}
 				}
 			}
