@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -36,6 +37,12 @@ type Notification struct {
 	Voice   string
 }
 
+type OsConfig struct {
+	Platform      string
+	SpeechCommand string
+	PlayCommand   string
+}
+
 func ParseConfig(configpath string) *Config {
 	file, _ := os.Open(configpath)
 	decoder := json.NewDecoder(file)
@@ -47,27 +54,45 @@ func ParseConfig(configpath string) *Config {
 	return configuration
 }
 
-func checkCommand(name string, executable string, params string) {
-	err := exec.Command(executable, params).Run()
+func checkCommand(executable string) {
+	err := exec.Command("which", executable).Run()
 	if err != nil {
-		log.Fatal(fmt.Sprintf("You must have %s installed in your PATH", name))
+		log.Fatal(fmt.Sprintf("You must have %s installed in your PATH", executable))
 	}
 }
 
-func Notifier(c chan Notification) {
-	checkCommand("say", "say", "-v?")
-	checkCommand("afplay", "which", "afplay")
+func DarwinNotifier(c chan Notification, osc OsConfig) {
 	for msg := range c {
 		if msg.Type == 1 {
 			if msg.Voice == "" {
 				log.Printf(" Saying %s using default voice\n", msg.Message)
-				exec.Command("say", fmt.Sprintf("%s", msg.Message)).Run()
+				exec.Command(osc.SpeechCommand, fmt.Sprintf("%s", msg.Message)).Run()
 			} else {
 				log.Printf(" Saying %s using %s voice\n", msg.Message, msg.Voice)
-				exec.Command("say", "-v", fmt.Sprintf("%s", msg.Voice), fmt.Sprintf("%s", msg.Message)).Run()
+				exec.Command(osc.SpeechCommand, "-v", fmt.Sprintf("%s", msg.Voice), fmt.Sprintf("%s", msg.Message)).Run()
 			}
 		} else if msg.Type == 2 {
-			play_cmd := exec.Command("afplay", msg.Message)
+			play_cmd := exec.Command(osc.PlayCommand, msg.Message)
+			play_cmd.Dir = Cwd
+			err := play_cmd.Run()
+			if err != nil {
+				log.Printf(" Could not play file %s", msg.Message)
+			}
+		}
+	}
+}
+
+func LinuxNotifier(c chan Notification, osc OsConfig) {
+	for msg := range c {
+		if msg.Type == 1 {
+			if msg.Voice == "" {
+				log.Printf(" Saying %s\n", msg.Message)
+				exec.Command(osc.SpeechCommand, fmt.Sprintf("%s", msg.Message)).Run()
+			} else {
+				panic("Specifying voice on Linux is not supported")
+			}
+		} else if msg.Type == 2 {
+			play_cmd := exec.Command(osc.PlayCommand, msg.Message)
 			play_cmd.Dir = Cwd
 			err := play_cmd.Run()
 			if err != nil {
@@ -123,7 +148,21 @@ func main() {
 	flag.Parse()
 	config := ParseConfig(*ConfigFile)
 	notification_channel := make(chan Notification)
-	checkCommand("git", "git", "--version")
+
+	var osconfig OsConfig
+	if runtime.GOOS == "darwin" {
+		// Pre-installed on OSX
+		osconfig = OsConfig{runtime.GOOS, "say", "afplay"}
+	} else if runtime.GOOS == "linux" {
+		// Needs Alsa and espeak
+		osconfig = OsConfig{runtime.GOOS, "espeak", "aplay"}
+	} else {
+		panic("Your platform is not supported")
+	}
+
+	checkCommand("git")
+	checkCommand(osconfig.SpeechCommand)
+	checkCommand(osconfig.PlayCommand)
 
 	for repo := range config.Repos {
 		r := config.Repos[repo]
@@ -131,5 +170,9 @@ func main() {
 		go WatchRepo(notification_channel, time.NewTicker(time.Duration(config.Period)*time.Second), r)
 	}
 
-	Notifier(notification_channel)
+	if osconfig.Platform == "darwin" {
+		DarwinNotifier(notification_channel, osconfig)
+	} else if osconfig.Platform == "linux" {
+		LinuxNotifier(notification_channel, osconfig)
+	}
 }
